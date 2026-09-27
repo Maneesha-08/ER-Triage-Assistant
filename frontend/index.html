@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ER Triage Assistant | Emergency Room Priority Management System</title>
+  <meta name="description" content="Hospital Emergency Room Triage Management System organizing patients via Java Max-Heap PriorityQueue, DMGT Propositional Logic, and Python Weighted Scoring.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Emergency Alert & Disclaimer Banner -->
+  <aside class="academic-disclaimer-bar" role="complementary" aria-label="Academic Demo Disclaimer">
+    <div class="disclaimer-content">
+      <span class="badge-disclaimer">ACADEMIC DEMO</span>
+      <span><strong>Notice:</strong> This software is strictly an academic project demonstration (DMGT + ADSA + OOPJ + AI). It is <strong>NOT</strong> for clinical diagnosis, autonomous triage, or medical decision-making.</span>
+    </div>
+    <div class="system-status-indicator" id="systemStatusPill">
+      <span class="status-dot online"></span>
+      <span id="systemStatusText">Connecting to Java Backend...</span>
+    </div>
+  </aside>
+
+  <!-- Main Application Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="branding">
+        <div class="logo-box">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 6v12m-6-6h12"/>
+            <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="app-title">ER Triage Assistant</h1>
+          <p class="app-subtitle">Emergency Patient Priority Management System</p>
+        </div>
+      </div>
+
+      <!-- Action Toolbar -->
+      <div class="header-actions">
+        <button id="btnRunAnalysis" class="btn btn-primary" title="Execute Java -> JSON -> Python -> JSON -> Heap Pipeline">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          <span>Run Triage Analysis</span>
+        </button>
+
+        <button id="btnOpenAddModal" class="btn btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add Patient</span>
+        </button>
+
+        <button id="btnResetDemo" class="btn btn-outline" title="Reset queue to sample patients A, B, C, D, E">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+          <span>Reset Demo</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notification Banner -->
+  <div id="statusNotification" class="status-banner hidden" role="status">
+    <div class="status-spinner" id="statusSpinner"></div>
+    <span id="statusMessage">Analyzing patient data...</span>
+  </div>
+
+  <main class="main-container">
+
+    <!-- KPI Statistics Cards -->
+    <section class="stats-grid" aria-label="Triage Queue Statistics">
+      <div class="stat-card stat-total">
+        <div class="stat-meta">
+          <span class="stat-label">Total in Queue</span>
+          <span class="stat-desc">Active Heap Size</span>
+        </div>
+        <div class="stat-value" id="statTotalPatients">0</div>
+        <div class="stat-badge">ADSA Max-Heap</div>
+      </div>
+
+      <div class="stat-card stat-critical">
+        <div class="stat-meta">
+          <span class="stat-label">Critical Patients</span>
+          <span class="stat-desc">Immediate Resuscitation</span>
+        </div>
+        <div class="stat-value" id="statCriticalPatients">0</div>
+        <div class="stat-badge badge-crit">Score &ge; 80</div>
+      </div>
+
+      <div class="stat-card stat-high">
+        <div class="stat-meta">
+          <span class="stat-label">High Priority</span>
+          <span class="stat-desc">Emergent Attention</span>
+        </div>
+        <div class="stat-value" id="statHighPatients">0</div>
+        <div class="stat-badge badge-hi">Score 60 - 79</div>
+      </div>
+
+      <div class="stat-card stat-medium">
+        <div class="stat-meta">
+          <span class="stat-label">Medium Priority</span>
+          <span class="stat-desc">Urgent Evaluation</span>
+        </div>
+        <div class="stat-value" id="statMediumPatients">0</div>
+        <div class="stat-badge badge-med">Score 35 - 59</div>
+      </div>
+
+      <div class="stat-card stat-low">
+        <div class="stat-meta">
+          <span class="stat-label">Low Priority</span>
+          <span class="stat-desc">Non-Urgent / Routine</span>
+        </div>
+        <div class="stat-value" id="statLowPatients">0</div>
+        <div class="stat-badge badge-lo">Score &lt; 35</div>
+      </div>
+    </section>
+
+    <!-- Academic Integration Overview Strip -->
+    <section class="academic-flow-card">
+      <div class="flow-header">
+        <h3>Integrated Academic Disciplines</h3>
+        <span class="flow-tag">Multi-Disciplinary Pipeline</span>
+      </div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <span class="step-num">1</span>
+          <div>
+            <strong>OOPJ</strong>
+            <p>Encapsulated Patient Object</p>
+          </div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <span class="step-num">2</span>
+          <div>
+            <strong>DMGT</strong>
+            <p>Propositional Logic Rules</p>
+          </div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <span class="step-num">3</span>
+          <div>
+            <strong>ADSA</strong>
+            <p>Binary Max-Heap PriorityQueue</p>
+          </div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <span class="step-num">4</span>
+          <div>
+            <strong>IPC / JSON</strong>
+            <p>Shared File Serialization</p>
+          </div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <span class="step-num">5</span>
+          <div>
+            <strong>AI / Python</strong>
+            <p>Weighted Regression Scoring</p>
+          </div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <span class="step-num">6</span>
+          <div>
+            <strong>ADSA Re-Heapify</strong>
+            <p>O(N) Dynamic Re-ranking</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Triage Table & Queue Management -->
+    <section class="card triage-section">
+      <div class="section-toolbar">
+        <div class="toolbar-title-group">
+          <h2>Active Triage Queue</h2>
+          <span class="queue-subtitle">Dynamic Max-Heap Priority Ordering (Root = Highest Severity)</span>
+        </div>
+
+        <div class="toolbar-filters">
+          <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="searchInput" placeholder="Search patient ID, name, symptoms..." aria-label="Search patients">
+          </div>
+
+          <div class="select-wrapper">
+            <label for="filterPriority" class="sr-only">Filter Priority</label>
+            <select id="filterPriority">
+              <option value="ALL">All Priorities</option>
+              <option value="CRITICAL">Critical Only</option>
+              <option value="HIGH">High Priority</option>
+              <option value="MEDIUM">Medium Priority</option>
+              <option value="LOW">Low Priority</option>
+            </select>
+          </div>
+
+          <button id="btnRefresh" class="btn btn-outline btn-icon" title="Refresh Queue from Backend">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Table Wrapper -->
+      <div class="table-container">
+        <table class="triage-table" id="triageTable">
+          <thead>
+            <tr>
+              <th scope="col" style="width: 70px;">Rank</th>
+              <th scope="col" style="width: 220px;">Patient</th>
+              <th scope="col" style="width: 65px;">Age</th>
+              <th scope="col">Symptoms & Presentation</th>
+              <th scope="col" style="width: 110px;">DMGT Rule</th>
+              <th scope="col" style="width: 100px;">Py Score</th>
+              <th scope="col" style="width: 110px;">Final Score</th>
+              <th scope="col" style="width: 110px;">Priority</th>
+              <th scope="col" style="width: 130px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="triageTableBody">
+            <tr>
+              <td colspan="9" class="empty-state">Loading patient queue...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Add Patient Modal Form -->
+  <div id="addPatientModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2 id="modalTitle">Add New Patient to Triage Heap</h2>
+          <p class="modal-subtitle">Inputs are mapped to Java Patient object & DMGT proposition variables</p>
+        </div>
+        <button id="btnCloseModal" class="btn-close" aria-label="Close modal">&times;</button>
+      </div>
+
+      <!-- Quick Preset Demo Buttons -->
+      <div class="preset-section">
+        <span class="preset-label">Quick Load Demo Case:</span>
+        <div class="preset-btn-group">
+          <button type="button" class="btn-preset" data-preset="A">Case A: Chest Pain + Dyspnea</button>
+          <button type="button" class="btn-preset" data-preset="B">Case B: Mild Fever</button>
+          <button type="button" class="btn-preset" data-preset="C">Case C: Hypoxia + Wheezing</button>
+          <button type="button" class="btn-preset" data-preset="D">Case D: Minor Sprain</button>
+          <button type="button" class="btn-preset" data-preset="E">Case E: Trauma Unconscious</button>
+        </div>
+      </div>
+
+      <form id="addPatientForm">
+        <div class="form-grid">
+          <!-- Patient ID & Name -->
+          <div class="form-group">
+            <label for="formPatientId">Patient ID *</label>
+            <input type="text" id="formPatientId" required placeholder="e.g. P106" value="P106">
+          </div>
+
+          <div class="form-group">
+            <label for="formName">Patient Full Name *</label>
+            <input type="text" id="formName" required placeholder="e.g. Walter White">
+          </div>
+
+          <div class="form-group">
+            <label for="formAge">Age (Years) *</label>
+            <input type="number" id="formAge" required min="1" max="120" value="45">
+          </div>
+
+          <!-- Vitals -->
+          <div class="form-group">
+            <label for="formTemperature">Temperature (°F) *</label>
+            <input type="number" step="0.1" id="formTemperature" required min="90" max="110" value="98.6">
+          </div>
+
+          <div class="form-group">
+            <label for="formHeartRate">Heart Rate (BPM) *</label>
+            <input type="number" id="formHeartRate" required min="30" max="250" value="80">
+          </div>
+
+          <div class="form-group">
+            <label for="formBloodPressure">Blood Pressure (Systolic/Diastolic) *</label>
+            <input type="text" id="formBloodPressure" required placeholder="120/80" value="120/80">
+          </div>
+
+          <div class="form-group">
+            <label for="formOxygenLevel">Oxygen Saturation SpO2 (%) *</label>
+            <input type="number" id="formOxygenLevel" required min="50" max="100" value="98">
+          </div>
+
+          <div class="form-group full-width">
+            <label for="formSymptoms">Symptoms Description *</label>
+            <textarea id="formSymptoms" rows="2" required placeholder="Describe chief complaint, pain onset, location..."></textarea>
+          </div>
+
+          <!-- DMGT Proposition Flags -->
+          <div class="form-group full-width">
+            <label class="section-subheading">DMGT Propositional Indicators (Truth Value Assignment):</label>
+            <div class="checkbox-grid">
+              <label class="checkbox-card">
+                <input type="checkbox" id="formChestPain">
+                <div>
+                  <strong>P: Chest Pain</strong>
+                  <span>Suspected acute coronary syndrome</span>
+                </div>
+              </label>
+
+              <label class="checkbox-card">
+                <input type="checkbox" id="formBreathingDifficulty">
+                <div>
+                  <strong>Q: Breathing Difficulty</strong>
+                  <span>Dyspnea, tachypnea, or respiratory distress</span>
+                </div>
+              </label>
+
+              <label class="checkbox-card">
+                <input type="checkbox" id="formBleeding">
+                <div>
+                  <strong>S: Severe Bleeding</strong>
+                  <span>Acute active hemorrhage / trauma</span>
+                </div>
+              </label>
+
+              <label class="checkbox-card">
+                <input type="checkbox" id="formUnconscious">
+                <div>
+                  <strong>R: Unconscious</strong>
+                  <span>Unresponsive GCS neurological impairment</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="btnCancelAdd" class="btn btn-outline">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            <span>Add Patient to PriorityQueue</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Patient Details & Academic Logic Modal -->
+  <div id="detailsModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="detailsTitle">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <div>
+          <h2 id="detailsTitle">Patient Triage Breakdown</h2>
+          <p class="modal-subtitle" id="detailsSubtitle">Clinical Parameters, DMGT Truth Inference & Python Regression</p>
+        </div>
+        <button id="btnCloseDetails" class="btn-close" aria-label="Close details modal">&times;</button>
+      </div>
+
+      <div class="details-content" id="detailsBody">
+        <!-- Rendered dynamically via script.js -->
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" id="btnCloseDetailsBottom" class="btn btn-secondary">Close Breakdown</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Python Analysis Logs Modal -->
+  <div id="logsModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <div>
+          <h2>Python Process Execution Logs</h2>
+          <p class="modal-subtitle">Captured from Java ProcessBuilder stdout</p>
+        </div>
+        <button id="btnCloseLogs" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <pre class="terminal-log" id="pythonLogsContent"></pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnCloseLogsBottom" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p>ER Triage Assistant &bull; Academic Full-Stack Demonstration (DMGT &bull; ADSA &bull; OOPJ &bull; AI)</p>
+    <p class="footer-subtext">Designed for Pair-Programming & Academic Viva Examination &bull; All Data Simulated</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

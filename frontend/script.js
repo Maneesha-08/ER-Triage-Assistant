@@ -16,9 +16,7 @@
 // Determine API Base URL:
 // When served via Java HttpServer, window.location.origin is 'http://localhost:8080'.
 // When opened directly via file://, fallback to 'http://localhost:8080'.
-const API_BASE = window.location.protocol.startsWith('http')
-  ? window.location.origin
-  : 'http://localhost:8080';
+const API_BASE = 'https://er-triage-assistant.onrender.com';
 
 // Global State
 let patientsData = [];
